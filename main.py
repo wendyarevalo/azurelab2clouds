@@ -1,8 +1,11 @@
+import json
 import math
 
 
 def numerical_integration(lower, upper):
     N_intervals = [10, 100, 1000, 10000, 100000, 1000000]
+    N_integrals = "{}"
+    json_integrals = json.loads(N_integrals)
     for N in N_intervals:
         subinterval_width = (upper - lower) / N
         integral = 0.0
@@ -11,7 +14,10 @@ def numerical_integration(lower, upper):
             rectangle = lower + i * subinterval_width
             integral += abs(math.sin(rectangle)) * subinterval_width
 
-        print(f'N = {N}: {integral:.5f}')
+        n_integral = {N: f'{integral:.10f}'}
+        json_integrals.update(n_integral)
+
+    print(json.dumps(json_integrals))
 
 
 def main():
