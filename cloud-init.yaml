@@ -20,6 +20,21 @@ write_files:
     path: /etc/nginx/sites-available/my_flask_app
     permissions: '0644'
   - content: |
+      [Unit]
+      Description=Gunicorn instance to serve my_flask_app
+      After=network.target
+      
+      [Service]
+      User=wyaeadmin
+      Group=wyaeadmin
+      WorkingDirectory=/home/wyaeadmin/my_flask_app
+      ExecStart=/usr/local/bin/gunicorn --workers 3 --bind 0.0.0.0:5000 app:app
+      
+      [Install]
+      WantedBy=multi-user.target
+    path: /etc/systemd/system/my_flask_app.service
+    permissions: '0644'
+  - content: |
       from flask import Flask
       from flask import jsonify
       import math
@@ -59,7 +74,8 @@ runcmd:
   - sudo pip3 install gunicorn Flask
   - sudo ln -s /etc/nginx/sites-available/my_flask_app /etc/nginx/sites-enabled/
   - sudo rm /etc/nginx/sites-enabled/default || true
+  - sudo systemctl enable my_flask_app
   - sudo systemctl restart nginx
-  - cd /home/wyaeadmin/my_flask_app && gunicorn --bind 0.0.0.0:5000 app:app &
+  - sudo systemctl start my_flask_app
 
 final_message: "Custom initialization completed."
