@@ -1,4 +1,5 @@
 from flask import Flask
+from flask import jsonify
 import math
 import json
 
@@ -23,4 +24,4 @@ def get_numerical_integration(lower_str, upper_str):
         n_integral = {N: f'{integral:.10f}'}
         json_integrals.update(n_integral)
 
-    return json.dumps(json_integrals), 200
+    return jsonify(json_integrals), 200

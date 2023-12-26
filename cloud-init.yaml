@@ -1,0 +1,65 @@
+#cloud-config
+
+#az vmss create --resource-group azurelabtwopart2 --name scalesetlab --image Ubuntu2204 --orchestration-mode uniform --custom-data cloud-init.yaml --admin-username wyaeadmin --generate-ssh-keys --instance-count 2 --vm-sku Standard_B1ms --upgrade-policy-mode automatic --lb-sku standard --zones 1 2 3
+packages:
+  - python3-pip
+  - nginx
+  - software-properties-common
+write_files:
+  - content: |
+      server {
+          listen 80;
+          server_name flasker.example.com;
+          location / {
+              proxy_pass http://127.0.0.1:5000;
+              proxy_set_header Host $host;
+              proxy_set_header X-Real-IP $remote_addr;
+              proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+          }
+      }
+    path: /etc/nginx/sites-available/my_flask_app
+    permissions: '0644'
+  - content: |
+      from flask import Flask
+      from flask import jsonify
+      import math
+      import json
+
+      app = Flask(__name__)
+
+      @app.route('/numericalintegralservice/<lower_str>/<upper_str>')
+      def get_numerical_integration(lower_str, upper_str):
+          upper = float(upper_str)
+          lower = float(lower_str)
+          N_intervals = [10, 100, 1000, 10000, 100000, 1000000]
+          N_integrals = "{}"
+          json_integrals = json.loads(N_integrals)
+          for N in N_intervals:
+              subinterval_width = (upper - lower) / N
+              integral = 0.0
+      
+              for i in range(N):
+                  rectangle = lower + i * subinterval_width
+                  integral += abs(math.sin(rectangle)) * subinterval_width
+      
+              n_integral = {N: f'{integral:.10f}'}
+              json_integrals.update(n_integral)
+      
+          return jsonify(json_integrals), 200
+
+      if __name__ == '__main__':
+          app.run(debug=True, host='0.0.0.0', port=5000)
+    path: /home/wyaeadmin/my_flask_app/app.py
+    permissions: '0755'
+
+runcmd:
+  - sudo add-apt-repository ppa:certbot/certbot -y
+  - sudo apt-get update
+  - sudo apt-get install certbot python3-certbot-nginx -y
+  - sudo pip3 install gunicorn Flask
+  - sudo ln -s /etc/nginx/sites-available/my_flask_app /etc/nginx/sites-enabled/
+  - sudo rm /etc/nginx/sites-enabled/default || true
+  - sudo systemctl restart nginx
+  - cd /home/wyaeadmin/my_flask_app && gunicorn --bind 0.0.0.0:5000 app:app &
+
+final_message: "Custom initialization completed."
