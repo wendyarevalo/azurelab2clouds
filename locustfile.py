@@ -5,4 +5,5 @@ from locust import HttpUser, task
 class QuickstartUser(HttpUser):
     @task
     def numerical_integration(self):
-        self.client.get("/numericalintegralservice/0/3.14159")
+        #self.client.get("/numericalintegralservice/0/3.14159")
+        self.client.get("/api/http_trigger",json={ "lower": 0,"upper":3.14159 })
