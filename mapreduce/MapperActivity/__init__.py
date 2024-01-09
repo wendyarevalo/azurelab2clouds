@@ -12,9 +12,8 @@ import azure.functions as func
 def main(inputData):
     mapped_data = []
 
-    for key, value in inputData:
-        words = value.split()
-        for word in words:
-            mapped_data.append((word, 1))
+    words = inputData[1].split()
+    for word in words:
+        mapped_data.append((word, 1))
 
     return mapped_data

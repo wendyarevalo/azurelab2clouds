@@ -11,10 +11,10 @@ import azure.functions as func
 
 def main(mapResults):
     shuffled_data = {}
-    
-    for key, value in mapResults:
-        if key not in shuffled_data:
-            shuffled_data[key] = []
-        shuffled_data[key].append(value)
+    for map in mapResults:
+        for key, value in map:
+            if key not in shuffled_data:
+                shuffled_data[key] = []
+            shuffled_data[key].append(value)
     
     return shuffled_data

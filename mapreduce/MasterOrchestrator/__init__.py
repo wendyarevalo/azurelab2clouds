@@ -15,9 +15,17 @@ import azure.durable_functions as df
 
 def orchestrator_function(context: df.DurableOrchestrationContext):
     input_data = yield context.call_activity('GetInputDataFn')
-    map_results = yield context.call_activity('MapperActivity', input_data)
+    tasks = []
+    for line in input_data:
+        tasks.append(context.call_activity("MapperActivity", line))
+
+    map_results = yield context.task_all(tasks)
     shuffle_results = yield context.call_activity('ShufflerActivity', map_results)
-    reduce_results = yield context.call_activity('ReducerActivity', shuffle_results)
+    tasks = []
+    for key,values in shuffle_results.items():
+        tasks.append(context.call_activity("ReducerActivity", {key:values}))
+
+    reduce_results = yield context.task_all(tasks)
     return reduce_results
 
 main = df.Orchestrator.create(orchestrator_function)

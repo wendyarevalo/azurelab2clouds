@@ -15,5 +15,4 @@ def main(shuffledData):
     for key, values in shuffledData.items():
         total_count = sum(values)
         reduced_results.append((key, total_count))
-
     return reduced_results
